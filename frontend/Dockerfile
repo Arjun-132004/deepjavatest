@@ -1,7 +1,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN if [ -f package-lock.json ]; then npm pkg delete scripts.prepare >/dev/null 2>&1 || true && npm ci; else npm pkg delete scripts.prepare >/dev/null 2>&1 || true && npm install; fi
+RUN npm pkg delete scripts.prepare >/dev/null 2>&1 || true && if [ -f package-lock.json ]; then npm ci; else npm install; fi
 COPY . .
 RUN npm run build
 
@@ -9,7 +9,7 @@ RUN npm run build
 # Stock nginx here would need root for :80 and /var/cache/nginx and exits
 # [emerg] under the manifest's runAsNonRoot + readOnlyRootFilesystem.
 FROM nginxinc/nginx-unprivileged:1.27-alpine
-COPY --from=build /app/build /usr/share/nginx/html
+COPY --from=build /app/dist /usr/share/nginx/html
 # Already the image's default; stated so the manifest's runAsUser has
 # something to agree with and the review rules can see it.
 USER 101
