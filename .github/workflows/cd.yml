@@ -94,7 +94,22 @@ jobs:
           if [ -f "k8s/dev/backend/manifest.yaml" ]; then
             kubectl apply -n storefrontproject123 -f "k8s/dev/backend/manifest.yaml"
           else
-            kubectl apply -n storefrontproject123 -f "k8s/dev/backend/"
+            # YAML ONLY. This same directory also holds facts.json (the
+            # Deployment Facts written beside the manifest for caching and for
+            # the diagnose step). A directory apply feeds EVERY file in it to
+            # the validator, so that JSON fails with "apiVersion not set, kind
+            # not set" and takes the whole apply down with it — after the real
+            # manifests had already been created, which is what made it look
+            # like a rollout problem (2026-09, deepjavatest frontend).
+            set --
+            for f in "k8s/dev/backend"/*.yaml "k8s/dev/backend"/*.yml; do
+              [ -f "$f" ] && set -- "$@" -f "$f"
+            done
+            if [ "$#" -eq 0 ]; then
+              echo "No YAML manifests found in k8s/dev/backend/" >&2
+              exit 1
+            fi
+            kubectl apply -n storefrontproject123 "$@"
           fi
 
       - name: Restart backend rollout (image tag "latest" — force pods onto the new build)
@@ -186,7 +201,22 @@ jobs:
           if [ -f "k8s/dev/frontend/manifest.yaml" ]; then
             kubectl apply -n storefrontproject123 -f "k8s/dev/frontend/manifest.yaml"
           else
-            kubectl apply -n storefrontproject123 -f "k8s/dev/frontend/"
+            # YAML ONLY. This same directory also holds facts.json (the
+            # Deployment Facts written beside the manifest for caching and for
+            # the diagnose step). A directory apply feeds EVERY file in it to
+            # the validator, so that JSON fails with "apiVersion not set, kind
+            # not set" and takes the whole apply down with it — after the real
+            # manifests had already been created, which is what made it look
+            # like a rollout problem (2026-09, deepjavatest frontend).
+            set --
+            for f in "k8s/dev/frontend"/*.yaml "k8s/dev/frontend"/*.yml; do
+              [ -f "$f" ] && set -- "$@" -f "$f"
+            done
+            if [ "$#" -eq 0 ]; then
+              echo "No YAML manifests found in k8s/dev/frontend/" >&2
+              exit 1
+            fi
+            kubectl apply -n storefrontproject123 "$@"
           fi
 
       - name: Restart frontend rollout (image tag "latest" — force pods onto the new build)
