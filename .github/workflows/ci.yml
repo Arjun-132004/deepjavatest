@@ -23,14 +23,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::400200465532:role/gha-arjun-132004-deepjavatest-deepjavatest-backend
-          aws-region: eu-west-1
+          aws-region: us-east-1
 
       - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and tag backend image
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-backend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-backend
           TAG: ${{ github.sha }}
         run: |
           docker build -t "$ECR:$TAG" -t "$ECR:latest" -f "backend/Dockerfile" "backend"
@@ -38,7 +38,7 @@ jobs:
       - name: Scan backend image for vulnerabilities (Trivy)
         continue-on-error: true
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-backend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-backend
           TAG: ${{ github.sha }}
         run: |
           docker run --rm \
@@ -48,7 +48,7 @@ jobs:
             "$ECR:$TAG" || echo "::warning::Trivy flagged issues or could not run — non-blocking, see logs."
       - name: Push backend image
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-backend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-backend
           TAG: ${{ github.sha }}
         run: |
           docker push "$ECR:$TAG"
@@ -56,7 +56,7 @@ jobs:
 
       - name: Build and tag frontend image
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-frontend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-frontend
           TAG: ${{ github.sha }}
         run: |
           docker build -t "$ECR:$TAG" -t "$ECR:latest" -f "frontend/Dockerfile" "frontend"
@@ -64,7 +64,7 @@ jobs:
       - name: Scan frontend image for vulnerabilities (Trivy)
         continue-on-error: true
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-frontend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-frontend
           TAG: ${{ github.sha }}
         run: |
           docker run --rm \
@@ -74,7 +74,7 @@ jobs:
             "$ECR:$TAG" || echo "::warning::Trivy flagged issues or could not run — non-blocking, see logs."
       - name: Push frontend image
         env:
-          ECR: 400200465532.dkr.ecr.eu-west-1.amazonaws.com/deepjavatest-frontend
+          ECR: 400200465532.dkr.ecr.us-east-1.amazonaws.com/deepjavatest-frontend
           TAG: ${{ github.sha }}
         run: |
           docker push "$ECR:$TAG"
